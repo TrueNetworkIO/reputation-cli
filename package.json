@@ -1,0 +1,65 @@
+{
+  "name": "reputation-cli",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "bin": {
+    "reputation-cli": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "npx tsc",
+    "install:local": "sudo npm uninstall -g reputation-cli && yarn build && sudo npm install -g .",
+    "dev": "npx tsc && node dist/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Tushar Ojha",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/chalk": "^2.2.0",
+    "@types/figlet": "^1.5.8",
+    "@types/inquirer": "^8.0.0",
+    "@types/node": "^20.12.7",
+    "@types/shelljs": "^0.8.15",
+    "chalk": "^4.1.2",
+    "figlet": "^1.7.0",
+    "inquirer": "8.0.0",
+    "shelljs": "^0.8.5",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "@polkadot/keyring": "12.6.2",
+    "@truenetworkio/sdk": "^0.0.7",
+    "child_process": "^1.0.2",
+    "commander": "^12.0.0",
+    "fs": "^0.0.1-security",
+    "loading-cli": "^1.1.2",
+    "path": "^0.12.7",
+    "ts-node": "^10.9.2"
+  },
+  "resolutions": {
+    "@polkadot/api": "^8.3.1",
+    "@polkadot/api-augment": "^8.3.1",
+    "@polkadot/api-base": "^8.3.1",
+    "@polkadot/api-contract": "^8.3.1",
+    "@polkadot/api-derive": "^8.3.1",
+    "@polkadot/hw-ledger": "^9.1.1",
+    "@polkadot/keyring": "^9.1.1",
+    "@polkadot/networks": "^9.1.1",
+    "@polkadot/phishing": "^0.12.1",
+    "@polkadot/rpc-augment": "^8.3.1",
+    "@polkadot/rpc-core": "^8.3.1",
+    "@polkadot/rpc-provider": "^8.3.1",
+    "@polkadot/types": "^8.3.1",
+    "@polkadot/types-augment": "^8.3.1",
+    "@polkadot/types-codec": "^8.3.1",
+    "@polkadot/types-create": "^8.3.1",
+    "@polkadot/types-known": "^8.3.1",
+    "@polkadot/types-support": "^8.3.1",
+    "@polkadot/util": "^9.1.1",
+    "@polkadot/util-crypto": "^9.1.1",
+    "@polkadot/wasm-crypto": "^6.0.1",
+    "typescript": "^4.6.4"
+  },
+  "type": "module"
+}
