@@ -12,5 +12,5 @@ export const getBalance = async (address: string) => {
 
   await apiPromise.disconnect()
 
-  return formatBalance(freeBalance.toString(), { withSiFull: true, withUnit: 'TRUE' }, decimals[0]).toString()
+  return formatBalance(freeBalance.toString(), { withSiFull: true, withUnit: 'TRUE', decimals: decimals[0] }).toString()
 }
