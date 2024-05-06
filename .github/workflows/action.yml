@@ -1,0 +1,25 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  publish-gpr:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 18.18.0
+          registry-url: https://registry.npmjs.org
+      - run: npm install
+      - run: npm run build
+      - run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
