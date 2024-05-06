@@ -7,14 +7,12 @@ export const ENV_VARIABLE_NAME = 'TRUE_NETWORK_SECRET_KEY'
 
 export const constructConfigFileData = (account: Account, issuer: Issuer) => {
   return `
-import { TrueApi } from '@truenetworkio/sdk'
+import { TrueApi, testnet } from '@truenetworkio/sdk'
 import { TrueConfig } from '@truenetworkio/sdk/dist/utils/cli-config'
-import Network from '@truenetworkio/sdk/dist/network'
 
-// If you are using a NodeJS environment, please uncomment the below code
-// and install the dotenv dependency, using yarn add dotenv.
-// import dotenv from 'dotenv'
-// dotenv.config()
+// If you are not in a NodeJS environment, please comment the code following code:
+import dotenv from 'dotenv'
+dotenv.config()
 
 export const getTrueNetworkInstance = async (): Promise<TrueApi> => {
   const trueApi = await TrueApi.create(config.account.secret)
@@ -25,7 +23,7 @@ export const getTrueNetworkInstance = async (): Promise<TrueApi> => {
 }
 
 export const config: TrueConfig = {
-  network: Network.testnet,
+  network: testnet,
   account: {
     address: '${account.address}',
     secret: process.env.${ENV_VARIABLE_NAME} ?? ''
