@@ -8,6 +8,7 @@ import { TrueApi } from '@truenetworkio/sdk'
 import { runProjectInit } from './commands/init.js'
 import { registerIssuerOnChain } from './commands/register.js'
 import loading from 'loading-cli'
+import { getBalance } from './commands/balance.js'
 
 const keyring = new Keyring({ type: 'sr25519' });
 keyring.setSS58Format(7);
@@ -56,6 +57,14 @@ program
     load.stop();
 
     console.log(data)
+  });
+
+program
+  .command('balance')
+  .argument('<string>', 'Public address of the account.')
+  .description('Fetches the TRUE token balance from the chain.')
+  .action(async (account: string) => {
+    console.log('\nToken Balance:', await getBalance(account))
   });
 
 program.parse();
