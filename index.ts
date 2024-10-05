@@ -9,6 +9,8 @@ import { runProjectInit } from './commands/init.js'
 import { registerIssuerOnChain } from './commands/register.js'
 import loading from 'loading-cli'
 import { getBalance } from './commands/balance.js'
+import { setup } from './commands/algorithm/setup.js'
+import { getSchemaObjects } from './helpers/constants.js'
 
 const keyring = new Keyring({ type: 'sr25519' });
 keyring.setSS58Format(7);
@@ -67,4 +69,31 @@ program
     console.log('\nToken Balance:', await getBalance(account))
   });
 
+
+program
+  .command('acm-prepare')
+  .option('--override', 'Override the existing helper class for acm.')
+  .description('Compiles and generates the wasm code for the algorithm.')
+  .action(async () => {
+    try {
+      const response = await setup()
+      if (response) {
+        console.log('\n✅ Successfully prepared helper file for writing reputation algorithm.')
+      } else {
+        console.log('\n✅ Successfully prepared helper file for writing reputation algorithm.')
+      }
+    } catch (e: any) {
+      console.error(e?.message ?? "Error in preparing algorithm.")
+    }
+  });
+
+program
+  .command('compile')
+  .option('--standalone', 'Compile as a standalone code packet.')
+  .description('Compiles and generates the wasm code for the algorithm.')
+  .action(async (standalone: boolean) => {
+    await getSchemaObjects()
+    // readConfigForAlgos(`${process.cwd()}/${TRUE_DIRECTORY_NAME}/${CONFIG_FILE_NAME}`)
+    // await compileAlgorithm(standalone)
+  });
 program.parse();

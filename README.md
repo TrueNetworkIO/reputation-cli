@@ -38,3 +38,22 @@ And then run the command below to register:
 
 > Congrats ✨ 
 > The Project is registered successfully on-chain, now follow up the [docs](https://docs.truenetwork.io) to understand the detailed usage of the SDK.
+
+## Local Setup
+
+To install the CLI locally, use the following command:
+
+```
+  npm run install:local
+```
+It will uninstall the existing version of CLI and override by building the current state of project directory. 
+
+Now, you can simply use the `reputation-cli` command from anywhere in the terminal.
+
+
+## Contribution
+We are appreciate communit contribution to the True Network protocol & it's developer tooling. There are many ways you can contribute & join the ecosystem:
+
+- Building new applications & use-cases on top of True Network
+- Fixing issues on the repositories
+- Implmenting new features (Join the community to [discuss](https://at.truenetwork.io/community)).

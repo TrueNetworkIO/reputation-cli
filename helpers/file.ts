@@ -2,9 +2,26 @@
 import fs from 'fs'
 import path from 'path'
 import ts from 'typescript'
-import { Account, Issuer } from '@truenetworkio/sdk/dist/utils/cli-config.js'
-import { CONFIG_FILE_NAME, ENV_VARIABLE_NAME, TRUE_DIRECTORY_NAME, constructConfigFileData } from './constants.js'
+import { Account, Issuer, Algorithm } from '@truenetworkio/sdk/dist/utils/cli-config.js'
+import { ACM_DIRECTORY_NAME, ACM_HELPER_FILE_NAME, CONFIG_FILE_NAME, TRUE_DIRECTORY_NAME, constructConfigFileData } from './constants.js'
 
+  
+export const createAlgorithmHelperFile = (data: string) => {
+
+  const directoryPath = path.join(process.cwd(), ACM_DIRECTORY_NAME);
+
+  if (!fs.existsSync(directoryPath))
+    fs.mkdirSync(ACM_DIRECTORY_NAME)
+
+  const filePath = path.join(directoryPath, ACM_HELPER_FILE_NAME);
+
+  try {
+    fs.writeFileSync(filePath, data)
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
 
 export const createConfigFile = (account: Account, issuer: Issuer) => {
 
@@ -61,7 +78,8 @@ function replaceEnvVariables(str: string): string {
 
 type ParsedConfigObject = {
   account: Account,
-  issuer: Issuer
+  issuer: Issuer,
+  algorithm?: Algorithm
 }
 
 // Function to read object from TypeScript file
@@ -92,12 +110,12 @@ export function readObjectFromFile(filePath: string): ParsedConfigObject | null 
 
     // Match the object using regular expression
     const match = jsCode.match(objectRegex);
-
     // Check if a match is found
     if (match) {
 
-      let objString = match[1].replace('network_1.default.testnet', '"testnet"')
-
+      let objString = match[1].replace('sdk_1.testnet', '"testnet"')
+      objString = objString.replace('sdk_1.localnet', '"localnet"')
+      objString = objString.replaceAll(/schemas:\s*\[[\s\S]*?\]/g, '')
       const config = Function(`"use strict"; return (${objString});`)();
 
       return config as ParsedConfigObject
@@ -106,7 +124,111 @@ export function readObjectFromFile(filePath: string): ParsedConfigObject | null 
       return null;
     }
   } catch (e) {
-    console.log('e', e)
+    console.log('error:', e)
+    return null;
+  }
+}
+
+function extractSchemaValues(inputString: string) {
+  // Regex to match the schemas array
+  const schemasRegex = /schemas:\s*\[([\s\S]*?)\]/;
+  
+  // Extract the content inside the brackets
+  const match = inputString.match(schemasRegex);
+  
+  if (!match) {
+    return []; // Return an empty array if no match is found
+  }
+  
+  // Get the content inside the brackets
+  const schemaContent = match[1];
+  
+  // Split the content by commas, trim whitespace, and remove empty entries
+  const schemaArray = schemaContent
+    .split(',')
+    .map(item => item.trim())
+    .filter(item => item !== '');
+  
+  return schemaArray;
+}
+
+function executeJSInContext(jsCode: string, commandToExecute: string) {
+  // Create a new function that wraps the jsCode and the command to execute
+  const wrappedCode = `
+    ${jsCode}
+    
+    // Return the result of the command
+    (function() {
+      return ${commandToExecute};
+    })();
+  `;
+
+  // Use Function constructor instead of eval for better scoping
+  const executionFunction = new Function(wrappedCode);
+
+  try {
+    // Execute the function and return the result
+    return executionFunction();
+  } catch (error) {
+    console.error('Error executing command:', error);
+    return null;
+  }
+}
+
+// Function to read object from TypeScript file
+export function readConfigForAlgos(filePath: string) {
+  try {
+    // Load environment variables from a file
+    const envFile = process.cwd() + '/.env'; // Update with the path to your environment file
+    const envData = fs.readFileSync(envFile, 'utf8');
+    const envLines = envData.split('\n');
+    envLines.forEach(line => {
+      const [key, value] = line.split('=');
+      process.env[key] = value;
+    });
+
+    // Read the TypeScript file
+    let tsCode = fs.readFileSync(filePath, 'utf8',);
+
+    tsCode = replaceEnvVariables(tsCode)
+    // Transpile TypeScript to JavaScript
+    const jsCode = ts.transpileModule(tsCode, {
+      compilerOptions: {
+        target: ts.ScriptTarget.ES5,
+        module: ts.ModuleKind.CommonJS,
+      }
+    }).outputText;
+
+    console.log(jsCode)
+    const schemas = extractSchemaValues(jsCode)
+
+    console.log('schemas', schemas)
+    if(schemas.length == 0) {
+      throw Error("No schemas found in the configuration file.")
+    }
+
+    const result = executeJSInContext(jsCode, `${schemas[0]}.getSchemaObject()`)
+
+    console.log(result)
+
+    // const objectRegex = /schemas:\s*\[[\s\S]*?\]/g;
+
+    // // Match the object using regular expression
+    // const match = jsCode.match(objectRegex);
+    // // Check if a match is found
+    // if (match) {
+
+    //   // Fetch list of variable names as strings, and 
+
+    //   // const config = Function(`"use strict"; return (${objString});`)();
+
+    //   // return config as ParsedConfigObject
+    // } else {
+    //   console.log('No object found in the JavaScript code string.');
+    //   return null;
+    // }
+  } catch (e) {
+    console.log('error:', e)
     return null;
   }
 }

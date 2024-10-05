@@ -25,11 +25,11 @@
     "figlet": "^1.7.0",
     "inquirer": "8.0.0",
     "shelljs": "^0.8.5",
-    "typescript": "^5.4.5"
+    "typescript": "^5.6.3"
   },
   "dependencies": {
     "@polkadot/keyring": "12.6.2",
-    "@truenetworkio/sdk": "^0.0.7",
+    "@truenetworkio/sdk": "file:.yalc/@truenetworkio/sdk",
     "child_process": "^1.0.2",
     "commander": "^12.0.0",
     "fs": "^0.0.1-security",
