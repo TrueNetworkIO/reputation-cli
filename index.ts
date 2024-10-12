@@ -3,7 +3,7 @@
 import chalk from 'chalk'
 import figlet from 'figlet'
 import { Command } from 'commander'
-import { Keyring } from '@polkadot/keyring'
+import { Keyring } from '@polkadot/api'
 import { TrueApi } from '@truenetworkio/sdk'
 import { runProjectInit } from './commands/init.js'
 import { registerIssuerOnChain } from './commands/register.js'
