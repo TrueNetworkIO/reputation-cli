@@ -1,4 +1,4 @@
-import { Keyring } from '@polkadot/keyring'
+import { Keyring } from '@polkadot/api'
 import { mnemonicGenerate, cryptoWaitReady } from '@polkadot/util-crypto'
 import { stringToBlakeTwo256Hash } from '@truenetworkio/sdk/dist/utils/hashing.js'
 import { Account } from '@truenetworkio/sdk/dist/utils/cli-config.js'
