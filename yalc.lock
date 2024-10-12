@@ -1,0 +1,10 @@
+{
+  "version": "v1",
+  "packages": {
+    "@truenetworkio/sdk": {
+      "signature": "5fb9fb8a5050a76e5e3ea420dead08ec",
+      "file": true,
+      "replaced": "0.0.8"
+    }
+  }
+}

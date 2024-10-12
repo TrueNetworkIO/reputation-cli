@@ -3,12 +3,12 @@ import fs from 'fs'
 import path from 'path'
 import ts from 'typescript'
 import { Account, Issuer, Algorithm } from '@truenetworkio/sdk/dist/utils/cli-config.js'
-import { ACM_DIRECTORY_NAME, ACM_HELPER_FILE_NAME, CONFIG_FILE_NAME, TRUE_DIRECTORY_NAME, constructConfigFileData } from './constants.js'
+import { ACM_DIRECTORY_NAME, ACM_HELPER_FILE_NAME, CONFIG_FILE_NAME, TRUE_DIRECTORY_NAME, configPath, constructConfigFileData } from './constants.js'
 
   
-export const createAlgorithmHelperFile = (data: string) => {
+export const createAlgorithmHelperFile = (data: string, directory: string) => {
 
-  const directoryPath = path.join(process.cwd(), ACM_DIRECTORY_NAME);
+  const directoryPath = path.join(process.cwd(), directory, "assembly");
 
   if (!fs.existsSync(directoryPath))
     fs.mkdirSync(ACM_DIRECTORY_NAME)
@@ -230,5 +230,167 @@ export function readConfigForAlgos(filePath: string) {
   } catch (e) {
     console.log('error:', e)
     return null;
+  }
+}
+
+
+export function updateTrueConfigAlgoId(configPath: string, algoId: number) {
+  let content = fs.readFileSync(configPath, 'utf-8');
+
+  // Split the content into lines
+  const lines = content.split('\n');
+
+  let algorithmObjectFound = false;
+  let pathUpdated = false;
+
+  // Find the algorithm object and update or add the path
+  const updatedLines = lines.map((line, index) => {
+    if (line.includes('algorithm') && line.includes('{')) {
+      algorithmObjectFound = true;
+      return line;
+    }
+    if (algorithmObjectFound && !pathUpdated) {
+      if (line.includes('id:')) {
+        // Update existing path
+        pathUpdated = true;
+        return `    id: ${algoId},`;
+      } else if (line.includes('}')) {
+        // Add path if it doesn't exist
+        pathUpdated = true;
+        return `    id: ${algoId},\n${line}`;
+      }
+    }
+    return line;
+  });
+
+  if (!pathUpdated) {
+    console.warn('Could not find algorithm object in the configuration. The file structure might be different than expected.');
+    return;
+  }
+
+  // Join the lines back together
+  const updatedContent = updatedLines.join('\n');
+
+  // Write the updated content back to the file
+  fs.writeFileSync(configPath, updatedContent);
+}
+
+export function updateTrueConfig(configPath: string, newAlgorithmPath: string) {
+  let content = fs.readFileSync(configPath, 'utf-8');
+
+  // Split the content into lines
+  const lines = content.split('\n');
+
+  let algorithmObjectFound = false;
+  let pathUpdated = false;
+
+  // Find the algorithm object and update or add the path
+  const updatedLines = lines.map((line, index) => {
+    if (line.includes('algorithm') && line.includes('{')) {
+      algorithmObjectFound = true;
+      return line;
+    }
+    if (algorithmObjectFound && !pathUpdated) {
+      if (line.includes('path:')) {
+        // Update existing path
+        pathUpdated = true;
+        return `    path: '${newAlgorithmPath}',`;
+      } else if (line.includes('}')) {
+        // Add path if it doesn't exist
+        pathUpdated = true;
+        return `    path: '${newAlgorithmPath}',\n${line}`;
+      }
+    }
+    return line;
+  });
+
+  if (!pathUpdated) {
+    console.warn('Could not find algorithm object in the configuration. The file structure might be different than expected.');
+    return;
+  }
+
+  // Join the lines back together
+  const updatedContent = updatedLines.join('\n');
+
+  // Write the updated content back to the file
+  fs.writeFileSync(configPath, updatedContent);
+}
+
+export function readAlgorithmPath(): string | undefined {
+  const content = fs.readFileSync(configPath(), 'utf-8');
+  const algorithmObject = content.match(/algorithm:\s*{[\s\S]*?}/);
+  
+  if (algorithmObject) {
+    const pathMatch = algorithmObject[0].match(/path:\s*['"](.*)['"],?/);
+    return pathMatch ? pathMatch[1] : undefined;
+  }
+  
+  return undefined;
+}
+
+
+export function readAlgorithmId(): string | undefined {
+  const content = fs.readFileSync(configPath(), 'utf-8');
+  const algorithmObject = content.match(/algorithm:\s*{[\s\S]*?}/);
+  
+  if (algorithmObject) {
+    const pathMatch = algorithmObject[0].match(/id\s*:\s*(undefined|\d+)?/);
+    return pathMatch ? pathMatch[1] : undefined;
+  }
+  
+  return undefined;
+}
+
+export function readWasmAsBytes(filePath: string): number[] {
+  // Read the file as a buffer
+  const buffer = fs.readFileSync(filePath);
+  
+  // Convert the buffer to a Uint8Array
+  const uint8Array = new Uint8Array(buffer);
+  
+  // Convert the Uint8Array to a regular array of numbers
+  return Array.from(uint8Array);
+}
+
+
+interface AsBuildConfig {
+  targets?: {
+    [key: string]: any;
+  };
+  options?: {
+    bindings?: string;
+    noExportMemory?: boolean;
+    importMemory?: boolean;
+    exportTable?: boolean;
+    importTable?: boolean;
+    exportStart?: boolean;
+    noAssert?: boolean;
+    [key: string]: any;
+  };
+}
+
+export async function updateACMConfig(filePath: string): Promise<void> {
+  try {
+    // Read the existing config file
+    const configContent =  fs.readFileSync(filePath, 'utf-8');
+    const config: AsBuildConfig = JSON.parse(configContent);
+
+    // Update the specified values
+    if (!config.options) {
+      config.options = {};
+    }
+
+    config.options.bindings = "raw";
+    config.options.noExportMemory = true;
+    config.options.importMemory = true;
+    config.options.exportTable = false;
+    config.options.importTable = false;
+    config.options.exportStart = false;
+    config.options.noAssert = true;
+
+    // Write the updated config back to the file
+    fs.writeFileSync(filePath, JSON.stringify(config, null, 2));
+  } catch (error) {
+    console.error(`Error updating config: ${error}`);
   }
 }

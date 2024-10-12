@@ -3,12 +3,14 @@ import { Char, F32, F64, Hash, I16, I32, I64, I8, Schema, U16, U32, U64, U8 } fr
 import { Account, Issuer } from '@truenetworkio/sdk/dist/utils/cli-config.js'
 import path from 'path'
 import fs from 'fs'
-
 export const TRUE_DIRECTORY_NAME = 'true-network'
 export const CONFIG_FILE_NAME = 'true.config.ts'
 export const ACM_DIRECTORY_NAME = 'algorithm/assembly'
 export const ACM_HELPER_FILE_NAME = 'attestations.ts'
 export const ENV_VARIABLE_NAME = 'TRUE_NETWORK_SECRET_KEY'
+
+export const configPath = ()=> path.join(process.cwd(), TRUE_DIRECTORY_NAME, CONFIG_FILE_NAME);
+
 export const idToType: Record<string, string> = {
   '0': 'string',
   '1': 'u8',
@@ -79,12 +81,12 @@ interface SchemaInfo {
   schema: any;
 }
 
-function extractSchemaObject(schemaData: SchemaInfo): any[][] {
+function extractSchemaDetails(schemaData: SchemaInfo, hash: boolean): any[][] {
   
   const code = `
   ${schemaData.schema}
 
-  return ${schemaData.name}.getSchemaObject();
+  return ${schemaData.name}.${hash ? 'getSchemaHash()' : 'getSchemaObject()'};
   `
   const f = new Function("Schema", "Char", "U8", "I8", "U16", "I16", "U32", "I32", "U64", "I64", "F32", "F64", "Hash", code)
   const response = f(Schema, Char, U8, I8, U16, I16, U32, I32, U64, I64, F32, F64, Hash)
@@ -95,16 +97,14 @@ function extractSchemaObject(schemaData: SchemaInfo): any[][] {
 
 
 // Final attempt...
-export async function getSchemaObjects(): Promise<SchemaInfo[]> {
-  const configPath = path.join(process.cwd(), TRUE_DIRECTORY_NAME, CONFIG_FILE_NAME);
-
+export async function getSchemaObjects(hash: boolean): Promise<SchemaInfo[]> {
   let schemas: SchemaInfo[] = []
 
   // Step 1: Read the config file
   return new Promise<SchemaInfo[]>(
     (resolve, reject) => {
 
-      fs.readFile(configPath, 'utf8', (err, data) => {
+      fs.readFile(configPath(), 'utf8', (err, data) => {
         if (err) {
           console.error('Error reading config file:', err);
           reject();
@@ -145,7 +145,7 @@ export async function getSchemaObjects(): Promise<SchemaInfo[]> {
         const uniqueFilePaths = Array.from(new Set(schemas.map(sch => importPaths[sch.name])));
     
         uniqueFilePaths.forEach(schemaFile => {
-          const schemaFilePath = path.resolve(path.dirname(configPath), schemaFile + '.ts');
+          const schemaFilePath = path.resolve(path.dirname(configPath()), schemaFile + '.ts');
     
           fs.readFile(schemaFilePath, 'utf8', (err, schemaData) => {
             if (err) {
@@ -164,7 +164,7 @@ export async function getSchemaObjects(): Promise<SchemaInfo[]> {
                 // Store the extracted declaration as a string
                 schemas[index].schema = schema.toString().replace('export', '');
     
-                schemas[index].schema = extractSchemaObject(schemas[index])
+                schemas[index].schema = extractSchemaDetails(schemas[index], hash)
               } else {
                 console.warn(`Schema ${sch.name} not found in ${schemaFilePath}`);
                 reject();
@@ -182,11 +182,26 @@ export async function getSchemaObjects(): Promise<SchemaInfo[]> {
 
 }
 
+export const BASE_ACM_FILE = `
+// The Algorithm.
+// This is the space to design your reputation algorithm taking in account 
+// multiple schemas across true network to calculate a reputation score for
+// your users & the community. 
+
+// This is the starting point, calc function.
+// Algorithm Compute Module (ACM) uses this as starting point to execute
+// your reputation algorithm and expects an i64 as result.
+export function calc(): i64 {
+  return 0;
+}
+`
+
 export const constructAlgorithmHelper = (schemas: SchemaInfo[]) => {
   let indexCount = 0;
   let str = `
 // Auto Generated File.
 // Created using Reputation CLI from True Network.
+// To update the classes, use the "reputation-cli acm-prepare" at the root directory that contains "true-network".
 
 @inline
 function readMemory<T>(index: usize): T {

@@ -3,6 +3,16 @@ import { readObjectFromFile } from "./file.js";
 import { generateWallet } from "./wallet.js";
 import { CONFIG_FILE_NAME, TRUE_DIRECTORY_NAME } from "./constants.js";
 
+// Function to parse JSON with comments
+export function parseJsonWithComments(jsonString: string): any {
+  // Remove single-line comments
+  jsonString = jsonString.replace(/\/\/.*$/gm, '');
+  // Remove multi-line comments
+  jsonString = jsonString.replace(/\/\*[\s\S]*?\*\//g, '');
+  // Parse the cleaned JSON string
+  return JSON.parse(jsonString);
+}
+
 export const parseConfig = async () => {
   const config = readObjectFromFile(`${process.cwd()}/${TRUE_DIRECTORY_NAME}/${CONFIG_FILE_NAME}`);
 
