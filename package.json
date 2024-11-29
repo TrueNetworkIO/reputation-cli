@@ -7,7 +7,7 @@
     "reputation-cli": "./dist/index.js"
   },
   "scripts": {
-    "build": "npx tsc",
+    "build": "npm i && npx tsc",
     "install:local": "sudo npm uninstall -g reputation-cli && npm run build && sudo npm install -g .",
     "dev": "npx tsc && node dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
