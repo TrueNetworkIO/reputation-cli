@@ -1,6 +1,6 @@
 {
   "name": "reputation-cli",
-  "version": "0.0.3",
+  "version": "0.0.8",
   "description": "",
   "main": "index.js",
   "bin": {
@@ -20,22 +20,23 @@
     "@types/figlet": "^1.5.8",
     "@types/inquirer": "^8.0.0",
     "@types/node": "^20.12.7",
-    "@types/shelljs": "^0.8.15",
-    "chalk": "^4.1.2",
-    "figlet": "^1.7.0",
-    "inquirer": "8.0.0",
-    "shelljs": "^0.8.5",
-    "typescript": "^5.6.3"
+    "@types/shelljs": "^0.8.15"
   },
   "dependencies": {
-    "@truenetworkio/sdk": "^0.0.9",
     "@polkadot/keyring": "13.1.1",
+    "@truenetworkio/sdk": "^0.0.9",
+    "chalk": "^4.1.2",
     "child_process": "^1.0.2",
     "commander": "^12.0.0",
+    "figlet": "^1.7.0",
     "fs": "^0.0.1-security",
+    "inquirer": "8.0.0",
     "loading-cli": "^1.1.2",
     "path": "^0.12.7",
+    "shelljs": "^0.8.5",
+    "strip-json-comments": "^5.0.1",
     "ts-node": "^10.9.2",
+    "typescript": "^5.6.3",
     "util": "^0.12.5"
   },
   "resolutions": {

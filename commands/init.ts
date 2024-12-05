@@ -2,6 +2,7 @@
 import { exec } from 'child_process'
 import inquirer from 'inquirer'
 import loading from 'loading-cli'
+import fs from 'fs'
 
 import { Issuer } from '@truenetworkio/sdk/dist/utils/cli-config.js'
 import { getIssuer } from '@truenetworkio/sdk/dist/pallets/issuer/state.js'
@@ -77,6 +78,55 @@ const askQuestions = async (trueApi: TrueApi) => {
 };
 
 
+const detectPackageManager = () => {
+  // Check for lock files in current directory
+  const hasYarnLock = fs.existsSync('yarn.lock')
+  const hasPnpmLock = fs.existsSync('pnpm-lock.yaml')
+  const hasNpmLock = fs.existsSync('package-lock.json')
+
+  // Check for global installations as fallback
+  const checkGlobalInstall = (command: string) => {
+    try {
+      require('child_process').execSync(`${command} --version`, { stdio: 'ignore' })
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  if (hasYarnLock) return 'yarn'
+  if (hasPnpmLock) return 'pnpm'
+  if (hasNpmLock) return 'npm'
+
+  // If no lock file, check for global installations
+  if (checkGlobalInstall('yarn')) return 'yarn'
+  if (checkGlobalInstall('pnpm')) return 'pnpm'
+  if (checkGlobalInstall('npm')) return 'npm'
+
+  // Default to npm if nothing else is found
+  return 'npm'
+}
+
+const installDependency = (dependency: any, load: any) => {
+  const packageManager = detectPackageManager()
+  const commands = {
+    npm: `npm install ${dependency}`,
+    yarn: `yarn add ${dependency}`,
+    pnpm: `pnpm add ${dependency}`
+  }
+
+  return new Promise<any>((resolve, reject) => {
+    exec(commands[packageManager], (error) => {
+      if (error?.code) {
+        load.stop()
+        reject(error)
+        return
+      }
+      resolve(null)
+    })
+  })
+}
+
 export const runProjectInit = async (trueApi: TrueApi) => {
   // 1. Ask if to create a new issuer, get Issuer Name.
   const { issuer, account } = await askQuestions(trueApi)
@@ -85,23 +135,19 @@ export const runProjectInit = async (trueApi: TrueApi) => {
   createConfigFile(account, issuer)
 
   const load = loading("Installing @truenetworkio/sdk").start();
-  // 2.2 Installing the dependency i.e. @truenetworkio/reputationSDK
-  exec('yarn add @truenetworkio/sdk', (e) => {
-    if (e?.code) {
-      console.log(e.message)
-    }
+  
+  try {
+    // 2.2 Installing the dependency using detected package manager
+    await installDependency('@truenetworkio/sdk', load)
     load.stop()
-    if (!e?.cause) {
-      writeToEnvFile(`TRUE_NETWORK_SECRET_KEY=${account.secret}`)
+    
+    writeToEnvFile(`TRUE_NETWORK_SECRET_KEY=${account.secret}`)
+    writeToGitIgnore(`.env`)
 
-      writeToGitIgnore(`.env`)
-
-      console.log('\n✅ Successfully created a new project.')
-
-      console.log(`\nNext Steps: Get test tokens for the address: ${account.address}.`)
-
-      console.log(`\nAnd then, use the register command to secure the issuer on the network.\n`)
-
-    }
-  })
-};
+    console.log('\n✅ Successfully created a new project.')
+    console.log(`\nNext Steps: Get test tokens for the address: ${account.address}.`)
+    console.log(`\nAnd then, use the register command to secure the issuer on the network.\n`)
+  } catch (error: any) {
+    console.error('Installation failed:', error?.message)
+  }
+}
