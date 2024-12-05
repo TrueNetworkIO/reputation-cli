@@ -45,6 +45,12 @@ importers:
       '@polkadot/keyring':
         specifier: 13.1.1
         version: 13.1.1(@polkadot/util-crypto@13.1.1(@polkadot/util@13.1.1))(@polkadot/util@13.1.1)
+      '@polkadot/util':
+        specifier: 13.1.1
+        version: 13.1.1
+      '@polkadot/util-crypto':
+        specifier: 13.1.1
+        version: 13.1.1(@polkadot/util@13.1.1)
       '@truenetworkio/sdk':
         specifier: ^0.0.9
         version: 0.0.9
