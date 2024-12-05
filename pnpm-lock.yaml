@@ -39,6 +39,9 @@ importers:
 
   .:
     dependencies:
+      '@polkadot/api':
+        specifier: 13.2.1
+        version: 13.2.1
       '@polkadot/keyring':
         specifier: 13.1.1
         version: 13.1.1(@polkadot/util-crypto@13.1.1(@polkadot/util@13.1.1))(@polkadot/util@13.1.1)

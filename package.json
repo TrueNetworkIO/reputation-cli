@@ -23,6 +23,7 @@
     "@types/shelljs": "^0.8.15"
   },
   "dependencies": {
+    "@polkadot/api": "13.2.1",
     "@polkadot/keyring": "13.1.1",
     "@truenetworkio/sdk": "^0.0.9",
     "chalk": "^4.1.2",
