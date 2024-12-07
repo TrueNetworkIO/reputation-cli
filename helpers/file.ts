@@ -116,6 +116,7 @@ export function readObjectFromFile(filePath: string): ParsedConfigObject | null 
       let objString = match[1].replace('sdk_1.testnet', '"testnet"')
       objString = objString.replace('sdk_1.localnet', '"localnet"')
       objString = objString.replaceAll(/schemas:\s*\[[\s\S]*?\]/g, '')
+      objString = objString.replaceAll(/schemas:\s*\[[\s\S]*?\],/g, '')
       const config = Function(`"use strict"; return (${objString});`)();
 
       return config as ParsedConfigObject
