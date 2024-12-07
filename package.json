@@ -1,13 +1,13 @@
 {
   "name": "reputation-cli",
-  "version": "0.0.4",
+  "version": "0.0.8",
   "description": "",
   "main": "index.js",
   "bin": {
     "reputation-cli": "./dist/index.js"
   },
   "scripts": {
-    "build": "npm i && npx tsc",
+    "build": "npx tsc",
     "install:local": "sudo npm uninstall -g reputation-cli && npm run build && sudo npm install -g .",
     "dev": "npx tsc && node dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -24,19 +24,24 @@
   },
   "dependencies": {
     "@truenetworkio/sdk": "^0.0.10",
+    "@polkadot/api": "13.2.1",
     "@polkadot/keyring": "13.1.1",
+    "@polkadot/util": "13.1.1",
+    "@polkadot/util-crypto": "13.1.1",
+    "@truenetworkio/sdk": "^0.0.9",
+    "chalk": "^4.1.2",
     "child_process": "^1.0.2",
     "commander": "^12.0.0",
+    "figlet": "^1.7.0",
     "fs": "^0.0.1-security",
+    "inquirer": "8.0.0",
     "loading-cli": "^1.1.2",
     "path": "^0.12.7",
-    "ts-node": "^10.9.2",
-    "util": "^0.12.5",
-    "chalk": "^4.1.2",
-    "figlet": "^1.7.0",
-    "inquirer": "8.0.0",
     "shelljs": "^0.8.5",
-    "typescript": "^5.6.3"
+    "strip-json-comments": "^5.0.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3",
+    "util": "^0.12.5"
   },
   "resolutions": {
     "@polkadot/api": "13.2.1",
