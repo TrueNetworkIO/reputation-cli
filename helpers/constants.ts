@@ -9,7 +9,7 @@ export const ACM_DIRECTORY_NAME = 'algorithm/assembly'
 export const ACM_HELPER_FILE_NAME = 'attestations.ts'
 export const ENV_VARIABLE_NAME = 'TRUE_NETWORK_SECRET_KEY'
 
-export const configPath = ()=> path.join(process.cwd(), TRUE_DIRECTORY_NAME, CONFIG_FILE_NAME);
+export const configPath = () => path.join(process.cwd(), TRUE_DIRECTORY_NAME, CONFIG_FILE_NAME);
 
 export const idToType: Record<string, string> = {
   '0': 'string',
@@ -23,7 +23,8 @@ export const idToType: Record<string, string> = {
   '8': 'i64',
   '9': 'f32',
   '10': 'f64',
-  '11': 'string'
+  '11': 'string',
+  '12': 'string'
 }
 
 export const idToSize: Record<string, number> = {
@@ -38,7 +39,8 @@ export const idToSize: Record<string, number> = {
   '8': 8,
   '9': 4,
   '10': 8,
-  '11': 32
+  '11': 32,
+  '12': 128
 }
 
 export const constructConfigFileData = (account: Account, issuer: Issuer) => {
@@ -82,7 +84,7 @@ interface SchemaInfo {
 }
 
 function extractSchemaDetails(schemaData: SchemaInfo, hash: boolean): any[][] {
-  
+
   const code = `
   ${schemaData.schema}
 
@@ -110,60 +112,60 @@ export async function getSchemaObjects(hash: boolean): Promise<SchemaInfo[]> {
           reject();
           return;
         }
-    
+
         // Step 2: Extract the schema names from the schemas array
         const schemasRegex = /schemas:\s*\[(.*?)\]/s; // Corrected regex to capture everything inside the brackets
         const schemasMatch = schemasRegex.exec(data);
-    
+
         if (!schemasMatch) {
           console.error('No schemas array found in the config file.');
           reject();
           return;
         }
-    
+
         // Get the schema names from the match
         const schemaNames = schemasMatch[1].split(',').map(name => name.trim()).filter(Boolean);
-    
+
         schemas = schemaNames.map((n) => ({ name: n, schema: null }))
-    
+
         // Step 3: Extract the import statements to find the corresponding file
         const importRegex = /import\s*{\s*([^}]+)\s*}\s*from\s*['"]([^'"]+)['"]/g;
         const importPaths: { [key: string]: string } = {};
         let match;
-    
+
         while ((match = importRegex.exec(data)) !== null) {
           const importedSchemas = match[1].split(',').map(name => name.trim());
           const importPath = match[2];
-    
+
           // Map each schema name to its import path
           importedSchemas.forEach(schemaName => {
             importPaths[schemaName] = importPath;
           });
         }
-    
+
         // Step 4: Read the specific schema file that contains the definitions
         const uniqueFilePaths = Array.from(new Set(schemas.map(sch => importPaths[sch.name])));
-    
+
         uniqueFilePaths.forEach(schemaFile => {
           const schemaFilePath = path.resolve(path.dirname(configPath()), schemaFile + '.ts');
-    
+
           fs.readFile(schemaFilePath, 'utf8', (err, schemaData) => {
             if (err) {
               console.error(`Error reading schema file ${schemaFilePath}:`, err);
               reject();
               return;
             }
-    
+
             // Step 5: Extract the schema declarations from the schema file
             schemas.forEach((sch, index) => {
               const schemaRegex = /export const \w+ = Schema\.create\({[^}]+}\)/g;
               const schemaMatch = [...schemaData.matchAll(schemaRegex)];
-    
+
               const schema = schemaMatch.find((v) => v.toString().includes(sch.name))
               if (schema) {
                 // Store the extracted declaration as a string
                 schemas[index].schema = schema.toString().replace('export', '');
-    
+
                 schemas[index].schema = extractSchemaDetails(schemas[index], hash)
               } else {
                 console.warn(`Schema ${sch.name} not found in ${schemaFilePath}`);
@@ -209,21 +211,22 @@ function readMemory<T>(index: usize): T {
 }
 
 ${schemas.map((schema) => {
-  const schemaObject = schema.schema;
-  return `
+    const schemaObject = schema.schema;
+    return `
 class ${schema.name.toUpperCase()} {
 ${schemaObject.map((m: any) => `  ${m[0]}: ${idToType[m[1].toString()]};`).join('\n')}
 
   constructor() {
 ${schemaObject.map((m: any) => {
-  const value = indexCount;
-  indexCount += idToSize[m[1]];
-  return `    this.${m[0]} = readMemory<${idToType[m[1].toString()]}>(${value});`;
-}).join('\n')}
+      if (m[1] == 12) return; // Skip string types.
+      const value = indexCount;
+      indexCount += idToSize[m[1]];
+      return `    this.${m[0]} = readMemory<${idToType[m[1].toString()]}>(${value});`;
+    }).join('\n')}
   }
 }
 `;
-}).join('\n')}
+  }).join('\n')}
 
 export class Attestations {
 ${schemas.map(v => `  static ${v.name}: ${v.name.toUpperCase()} = new ${v.name.toUpperCase()}();`).join('\n')}
