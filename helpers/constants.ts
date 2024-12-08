@@ -24,7 +24,8 @@ export const idToType: Record<string, string> = {
   '9': 'f32',
   '10': 'f64',
   '11': 'string',
-  '12': 'string'
+  '12': 'string',
+  '13': 'string'
 }
 
 export const idToSize: Record<string, number> = {
@@ -40,7 +41,8 @@ export const idToSize: Record<string, number> = {
   '9': 4,
   '10': 8,
   '11': 32,
-  '12': 128
+  '12': 1,
+  '13': 128,
 }
 
 export const constructConfigFileData = (account: Account, issuer: Issuer) => {
