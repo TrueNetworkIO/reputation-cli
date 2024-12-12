@@ -13,9 +13,11 @@ import { setup, setupAcm } from './commands/algorithm/setup.js'
 import { exec } from 'child_process'
 import { checkIfFileExists, readAlgorithmId, readAlgorithmPath, readWasmAsBytes } from './helpers/file.js'
 import { deployAlgoOnChain, getReputationScore } from './commands/algorithm/deploy.js'
-import path from 'path'
+import path, { dirname, join } from 'path'
 import { promisify } from 'util'
 import { generateSchemaTypes } from './commands/schemas.js'
+import { fileURLToPath } from 'url'
+import { readFileSync } from 'fs'
 
 const asyncExec = promisify(exec)
 
@@ -43,9 +45,16 @@ const program = new Command();
 
 init()
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const packageJson = JSON.parse(
+  readFileSync(join(__dirname, '../package.json'), 'utf8')
+);
+
 program
   .name('reputation-cli')
-  .version('0.0.1');
+  .version(packageJson.version);
 
 program
   .command('init')
