@@ -52,8 +52,8 @@ importers:
         specifier: 13.1.1
         version: 13.1.1(@polkadot/util@13.1.1)
       '@truenetworkio/sdk':
-        specifier: ^0.0.10
-        version: 0.0.10
+        specifier: ^0.0.14
+        version: 0.0.14
       chalk:
         specifier: ^4.1.2
         version: 4.1.2
@@ -332,8 +332,8 @@ packages:
   '@substrate/ss58-registry@1.51.0':
     resolution: {integrity: sha512-TWDurLiPxndFgKjVavCniytBIw+t4ViOi7TYp9h/D0NMmkEc9klFTo+827eyEJ0lELpqO207Ey7uGxUa+BS1jQ==}
 
-  '@truenetworkio/sdk@0.0.10':
-    resolution: {integrity: sha512-kcTA1DO+AOH3aw95lJswA2cLMw1O+JEtzVd7wcko1Z+Po44myFalt7qSCeGKshV6MZ+FgNCt/7yJQvkXP+gR2g==}
+  '@truenetworkio/sdk@0.0.14':
+    resolution: {integrity: sha512-Yf0AJRcgzJWMV7dVfpDfbuPjOhJzjfXuDQMlyGwyZmieXpZtSWBDQw36+G+I/rFtOZuYLTU3rCDiGQ2wTrs3Yg==}
 
   '@tsconfig/node10@1.0.11':
     resolution: {integrity: sha512-DcRjDCujK/kCk/cUe8Xz8ZSpm8mS3mNNpta+jGCA6USEDfktlNvm1+IuZ9eTcDbNk41BHwpHHeW+N1lKCz4zOw==}
@@ -1204,7 +1204,7 @@ snapshots:
 
   '@substrate/ss58-registry@1.51.0': {}
 
-  '@truenetworkio/sdk@0.0.10':
+  '@truenetworkio/sdk@0.0.14':
     dependencies:
       '@polkadot/api': 13.2.1
       blakejs: 1.2.1

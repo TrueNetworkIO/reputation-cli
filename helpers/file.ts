@@ -5,7 +5,22 @@ import ts from 'typescript'
 import { Account, Issuer, Algorithm } from '@truenetworkio/sdk/dist/utils/cli-config.js'
 import { ACM_DIRECTORY_NAME, ACM_HELPER_FILE_NAME, CONFIG_FILE_NAME, TRUE_DIRECTORY_NAME, configPath, constructConfigFileData } from './constants.js'
 
-  
+export const checkIfFileExists = (fileName: string) => {
+  const filePath = path.join(process.cwd(), fileName);
+
+  // Check if .env file exists, if not create it
+  return fs.existsSync(filePath)
+}
+
+export const writeToFile = (fileName: string, data: string) => {
+  const filePath = path.join(process.cwd(), fileName);
+
+
+  // Check if .env file exists, if not create it
+  fs.writeFileSync(filePath, data);
+
+}
+
 export const createAlgorithmHelperFile = (data: string, directory: string) => {
 
   const directoryPath = path.join(process.cwd(), directory, "assembly");
@@ -133,23 +148,23 @@ export function readObjectFromFile(filePath: string): ParsedConfigObject | null 
 function extractSchemaValues(inputString: string) {
   // Regex to match the schemas array
   const schemasRegex = /schemas:\s*\[([\s\S]*?)\]/;
-  
+
   // Extract the content inside the brackets
   const match = inputString.match(schemasRegex);
-  
+
   if (!match) {
     return []; // Return an empty array if no match is found
   }
-  
+
   // Get the content inside the brackets
   const schemaContent = match[1];
-  
+
   // Split the content by commas, trim whitespace, and remove empty entries
   const schemaArray = schemaContent
     .split(',')
     .map(item => item.trim())
     .filter(item => item !== '');
-  
+
   return schemaArray;
 }
 
@@ -204,7 +219,7 @@ export function readConfigForAlgos(filePath: string) {
     const schemas = extractSchemaValues(jsCode)
 
     console.log('schemas', schemas)
-    if(schemas.length == 0) {
+    if (schemas.length == 0) {
       throw Error("No schemas found in the configuration file.")
     }
 
@@ -320,12 +335,12 @@ export function updateTrueConfig(configPath: string, newAlgorithmPath: string) {
 export function readAlgorithmPath(): string | undefined {
   const content = fs.readFileSync(configPath(), 'utf-8');
   const algorithmObject = content.match(/algorithm:\s*{[\s\S]*?}/);
-  
+
   if (algorithmObject) {
     const pathMatch = algorithmObject[0].match(/path:\s*['"](.*)['"],?/);
     return pathMatch ? pathMatch[1] : undefined;
   }
-  
+
   return undefined;
 }
 
@@ -333,22 +348,22 @@ export function readAlgorithmPath(): string | undefined {
 export function readAlgorithmId(): string | undefined {
   const content = fs.readFileSync(configPath(), 'utf-8');
   const algorithmObject = content.match(/algorithm:\s*{[\s\S]*?}/);
-  
+
   if (algorithmObject) {
     const pathMatch = algorithmObject[0].match(/id\s*:\s*(undefined|\d+)?/);
     return pathMatch ? pathMatch[1] : undefined;
   }
-  
+
   return undefined;
 }
 
 export function readWasmAsBytes(filePath: string): number[] {
   // Read the file as a buffer
   const buffer = fs.readFileSync(filePath);
-  
+
   // Convert the buffer to a Uint8Array
   const uint8Array = new Uint8Array(buffer);
-  
+
   // Convert the Uint8Array to a regular array of numbers
   return Array.from(uint8Array);
 }
@@ -373,7 +388,7 @@ interface AsBuildConfig {
 export async function updateACMConfig(filePath: string): Promise<void> {
   try {
     // Read the existing config file
-    const configContent =  fs.readFileSync(filePath, 'utf-8');
+    const configContent = fs.readFileSync(filePath, 'utf-8');
     const config: AsBuildConfig = JSON.parse(configContent);
 
     // Update the specified values

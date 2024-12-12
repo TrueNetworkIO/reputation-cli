@@ -1,5 +1,5 @@
 
-import { Char, F32, F64, Hash, I16, I32, I64, I8, Schema, U16, U32, U64, U8, Text } from '@truenetworkio/sdk/dist/schemas/index.js'
+import { Char, F32, F64, Hash, I16, I32, I64, I8, Schema, U16, U32, U64, U8, Text, Bool } from '@truenetworkio/sdk/dist/schemas/index.js'
 import { Account, Issuer } from '@truenetworkio/sdk/dist/utils/cli-config.js'
 import path from 'path'
 import fs from 'fs'
@@ -92,8 +92,8 @@ function extractSchemaDetails(schemaData: SchemaInfo, hash: boolean): any[][] {
 
   return ${schemaData.name}.${hash ? 'getSchemaHash()' : 'getSchemaObject()'};
   `
-  const f = new Function("Schema", "Char", "U8", "I8", "U16", "I16", "U32", "I32", "U64", "I64", "F32", "F64", "Hash", "Text", code)
-  const response = f(Schema, Char, U8, I8, U16, I16, U32, I32, U64, I64, F32, F64, Hash, Text)
+  const f = new Function("Schema", "Char", "U8", "I8", "U16", "I16", "U32", "I32", "U64", "I64", "F32", "F64", "Hash", "Bool", "Text", code)
+  const response = f(Schema, Char, U8, I8, U16, I16, U32, I32, U64, I64, F32, F64, Hash, Bool, Text)
 
   return response;
 }

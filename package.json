@@ -1,6 +1,6 @@
 {
   "name": "reputation-cli",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "",
   "main": "index.js",
   "bin": {
@@ -23,7 +23,7 @@
     "@types/shelljs": "^0.8.15"
   },
   "dependencies": {
-    "@truenetworkio/sdk": "^0.0.10",
+    "@truenetworkio/sdk": "^0.0.14",
     "@polkadot/api": "13.2.1",
     "@polkadot/keyring": "13.1.1",
     "@polkadot/util": "13.1.1",

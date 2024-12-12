@@ -11,10 +11,11 @@ import loading from 'loading-cli'
 import { getBalance } from './commands/balance.js'
 import { setup, setupAcm } from './commands/algorithm/setup.js'
 import { exec } from 'child_process'
-import { readAlgorithmId, readAlgorithmPath, readWasmAsBytes } from './helpers/file.js'
+import { checkIfFileExists, readAlgorithmId, readAlgorithmPath, readWasmAsBytes } from './helpers/file.js'
 import { deployAlgoOnChain, getReputationScore } from './commands/algorithm/deploy.js'
 import path from 'path'
 import { promisify } from 'util'
+import { generateSchemaTypes } from './commands/schemas.js'
 
 const asyncExec = promisify(exec)
 
@@ -164,6 +165,15 @@ program
 
     load.stop();
     console.log('✅ Build successful, the algorithm is compiled into wasm executable file.')
+  });
+
+  program
+  .command('generate-schemas')
+  .argument('[filePath]', 'Location & file name for the schemas.ts file to be saved.', 'schemas.ts')
+  .description('Fetch and generate schemas from the hashes stored on-chain.')
+  .action(async (filePath: string) => {
+    if(checkIfFileExists(filePath)) throw Error(`File already exists with name: ${filePath}`)
+    await generateSchemaTypes(trueApi, filePath)
   });
 
 
