@@ -2,9 +2,9 @@
   "version": "v1",
   "packages": {
     "@truenetworkio/sdk": {
-      "signature": "5fb9fb8a5050a76e5e3ea420dead08ec",
+      "signature": "1ccfac5809f6d5c69041db043d0d9df0",
       "file": true,
-      "replaced": "0.0.8"
+      "replaced": "^0.0.16"
     }
   }
 }
