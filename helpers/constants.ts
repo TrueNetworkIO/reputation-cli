@@ -111,7 +111,7 @@ export async function getSchemaObjects(hash: boolean): Promise<SchemaInfo[]> {
       fs.readFile(configPath(), 'utf8', (err, data) => {
         if (err) {
           console.error('Error reading config file:', err);
-          reject();
+          reject(Error(`'Error reading config file: ${err.message}`));
           return;
         }
 
@@ -154,7 +154,7 @@ export async function getSchemaObjects(hash: boolean): Promise<SchemaInfo[]> {
           fs.readFile(schemaFilePath, 'utf8', (err, schemaData) => {
             if (err) {
               console.error(`Error reading schema file ${schemaFilePath}:`, err);
-              reject();
+              reject(Error(`Error reading schema file ${schemaFilePath}`));
               return;
             }
 
@@ -216,11 +216,14 @@ ${schemas.map((schema) => {
     const schemaObject = schema.schema;
     return `
 class ${schema.name.toUpperCase()} {
-${schemaObject.map((m: any) => `  ${m[0]}: ${idToType[m[1].toString()]};`).join('\n')}
+${schemaObject.map((m: any) => {
+  if (m[1] == 13) return ''; // Skip string types.
+  return `  ${m[0]}: ${idToType[m[1].toString()]};`
+}).join('\n')}
 
   constructor() {
 ${schemaObject.map((m: any) => {
-      if (m[1] == 12) return; // Skip string types.
+      if (m[1] == 13) return ''; // Skip string types.
       const value = indexCount;
       indexCount += idToSize[m[1]];
       return `    this.${m[0]} = readMemory<${idToType[m[1].toString()]}>(${value});`;

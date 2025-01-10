@@ -8,7 +8,7 @@ export const getBalance = async (address: string) => {
   const apiPromise = await connect(testnet)
   const freeBalance = await getFreeBalance(apiPromise, account)
 
-  const decimals = (await apiPromise.registry.chainDecimals)
+  const decimals = apiPromise.registry.chainDecimals
 
   await apiPromise.disconnect()
 

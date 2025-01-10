@@ -4,12 +4,12 @@ import { TrueApi, toTrueNetworkAddress } from "@truenetworkio/sdk";
 import { CONFIG_FILE_NAME, TRUE_DIRECTORY_NAME } from '../helpers/constants.js'
 import { parseConfig } from '../helpers/parser.js';
 
-export const registerIssuerOnChain = async (trueApi: TrueApi): Promise<string> => {
+export const registerIssuerOnChain = async (): Promise<string> => {
   const config = await parseConfig();
 
   if (!config) throw Error(`Unable to load true-network config, make sure ${TRUE_DIRECTORY_NAME}/${CONFIG_FILE_NAME} exists. If not, please use init command.`)
 
-  trueApi = await TrueApi.create(config.account.secret)
+  const trueApi = await TrueApi.create(config.account.secret)
 
   const checkIfExists = await getIssuer(trueApi.network, config.issuer.hash)
 

@@ -13,7 +13,7 @@ import { createConfigFile, writeToEnvFile, writeToGitIgnore } from '../helpers/f
 
 import { TrueApi } from "@truenetworkio/sdk";
 
-const askQuestions = async (trueApi: TrueApi) => {
+const askQuestions = async () => {
 
   const { isSecret } = await inquirer.prompt({
     name: "isSecret",
@@ -41,7 +41,7 @@ const askQuestions = async (trueApi: TrueApi) => {
 
   const account = await generateWallet(existingSecret)
 
-  trueApi = await TrueApi.create(account.secret)
+  const trueApi = await TrueApi.create(account.secret)
 
   const { name } = await inquirer.prompt(
     {
@@ -53,6 +53,8 @@ const askQuestions = async (trueApi: TrueApi) => {
 
         // Checking if name is already registered by someone else.
         const issuer = await getIssuer(trueApi.network, `0x${stringToBlakeTwo256Hash(i)}`)
+
+        await trueApi.close();
 
         if (!issuer) return true;
 
@@ -67,9 +69,6 @@ const askQuestions = async (trueApi: TrueApi) => {
     name,
     hash: `0x${stringToBlakeTwo256Hash(name)}`
   }
-
-
-  await trueApi.close()
 
   return {
     account,
@@ -127,9 +126,9 @@ const installDependency = (dependency: any, load: any) => {
   })
 }
 
-export const runProjectInit = async (trueApi: TrueApi) => {
+export const runProjectInit = async () => {
   // 1. Ask if to create a new issuer, get Issuer Name.
-  const { issuer, account } = await askQuestions(trueApi)
+  const { issuer, account } = await askQuestions()
 
   // 2.1 Create a file to store: secret, issuerName, issuerHash, public address.
   createConfigFile(account, issuer)

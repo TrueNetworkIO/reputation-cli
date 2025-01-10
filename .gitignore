@@ -2,3 +2,4 @@ node_modules
 dist
 true-network
 .yalc
+.codegpt

@@ -1,15 +1,14 @@
 // deploy code on-chain. 
-import { getIssuer } from '@truenetworkio/sdk/dist/pallets/issuer/state.js'
 import { saveAlgo, runAlgo } from '@truenetworkio/sdk/dist/pallets/algorithms/extrinsic.js'
 
 import { TrueApi } from "@truenetworkio/sdk";
-import { readAlgorithmId, readAlgorithmPath, readWasmAsBytes, updateTrueConfig, updateTrueConfigAlgoId } from '../../helpers/file.js';
+import { readAlgorithmId, readAlgorithmPath, readWasmAsBytes, updateTrueConfigAlgoId } from '../../helpers/file.js';
 import path from 'path';
 import { parseConfig } from '../../helpers/parser.js';
 import { TRUE_DIRECTORY_NAME, CONFIG_FILE_NAME, getSchemaObjects } from '../../helpers/constants.js';
 
 
-export const deployAlgoOnChain = async (trueApi: TrueApi): Promise<number> => {
+export const deployAlgoOnChain = async (): Promise<number> => {
   const algoPath = readAlgorithmPath();
   
   if(!algoPath) throw Error("Unable to read the algorithm path from true config.");
@@ -20,7 +19,7 @@ export const deployAlgoOnChain = async (trueApi: TrueApi): Promise<number> => {
 
   if (!config) throw Error(`Unable to load true-network config, make sure ${TRUE_DIRECTORY_NAME}/${CONFIG_FILE_NAME} exists. If not, please use init command.`)
 
-  trueApi = await TrueApi.create(config.account.secret);
+  const trueApi = await TrueApi.create(config.account.secret);
 
   const schemaInfos = await getSchemaObjects(true);
 
@@ -36,7 +35,7 @@ export const deployAlgoOnChain = async (trueApi: TrueApi): Promise<number> => {
 };
 
 
-export const getReputationScore = async (trueApi: TrueApi, userId: string): Promise<number> => {
+export const getReputationScore = async (userId: string): Promise<number> => {
   const algoId = readAlgorithmId();
   
   if(!algoId) throw Error("Unable to read the algorithm id from true config.");
@@ -46,7 +45,7 @@ export const getReputationScore = async (trueApi: TrueApi, userId: string): Prom
 
   if (!config) throw Error(`Unable to load true-network config, make sure ${TRUE_DIRECTORY_NAME}/${CONFIG_FILE_NAME} exists. If not, please use init command.`)
 
-  trueApi = await TrueApi.create(config.account.secret);
+  const trueApi = await TrueApi.create(config.account.secret);
 
   const score = await runAlgo(trueApi.network, config.issuer.hash, trueApi.account, userId, parseInt(algoId));
   

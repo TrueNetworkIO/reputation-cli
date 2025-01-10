@@ -72,11 +72,11 @@ const askSchemaHashes = async (trueApi: TrueApi) => {
   return schemaHashes;
 };
 
-export const generateSchemaTypes = async (trueApi: TrueApi, filePath: string) => {
+export const generateSchemaTypes = async (filePath: string) => {
 
   const account = await generateWallet()
 
-  trueApi = await TrueApi.create(account.secret)
+  const trueApi = await TrueApi.create(account.secret)
   
   // 1. Ask if to create a new issuer, get Issuer Name.
   const schemaHashes = await askSchemaHashes(trueApi)

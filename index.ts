@@ -1,31 +1,28 @@
-#!/usr/bin/env node
-
+#!/usr/bin/env NODE_NO_WARNINGS=1 node
 import chalk from 'chalk'
 import figlet from 'figlet'
 import { Command } from 'commander'
-import { Keyring } from '@polkadot/api'
-import { TrueApi } from '@truenetworkio/sdk'
+import { Keyring } from '@polkadot/keyring'
 import { runProjectInit } from './commands/init.js'
 import { registerIssuerOnChain } from './commands/register.js'
 import loading from 'loading-cli'
 import { getBalance } from './commands/balance.js'
 import { setup, setupAcm } from './commands/algorithm/setup.js'
 import { exec } from 'child_process'
-import { checkIfFileExists, readAlgorithmId, readAlgorithmPath, readWasmAsBytes } from './helpers/file.js'
+import { checkIfFileExists, readAlgorithmId, readAlgorithmPath } from './helpers/file.js'
 import { deployAlgoOnChain, getReputationScore } from './commands/algorithm/deploy.js'
 import path, { dirname, join } from 'path'
 import { promisify } from 'util'
 import { generateSchemaTypes } from './commands/schemas.js'
 import { fileURLToPath } from 'url'
 import { readFileSync } from 'fs'
+import { fetchAttestationsAndCompute } from './commands/algorithm/test.js'
+import { CONFIG_FILE_NAME } from './helpers/constants.js'
 
 const asyncExec = promisify(exec)
 
 const keyring = new Keyring({ type: 'sr25519' });
 keyring.setSS58Format(7);
-
-let trueApi: TrueApi
-
 
 const init = () => {
   console.log(
@@ -60,17 +57,16 @@ program
   .command('init')
   .description('Initiate a new / existing project using True Network SDK.')
   .action(async () => {
-    await runProjectInit(trueApi)
+    await runProjectInit()
   });
 
 program
   .command('register')
   .description('Register the issuer from config on-chain.')
   .action(async () => {
-
     const load = loading("Registering issuer on True Network").start();
     // Register the issuer from the config file on-chain using the API.
-    const data = await registerIssuerOnChain(trueApi)
+    const data = await registerIssuerOnChain()
 
     load.stop();
 
@@ -82,7 +78,14 @@ program
   .argument('<string>', 'Public address of the account.')
   .description('Fetches the TRUE token balance from the chain.')
   .action(async (account: string) => {
-    console.log('\nToken Balance:', await getBalance(account))
+    const load = loading("Fetching account balance from True Network").start();
+
+    const balance = await getBalance(account)
+
+    load.stop();
+
+    console.log('\nToken Balance:', balance)
+    
   });
 
 
@@ -112,7 +115,7 @@ program
       if (response) {
         console.log('\n✅ Successfully prepared helper file for writing reputation algorithm.')
       } else {
-        console.log('\n✅ Successfully prepared helper file for writing reputation algorithm.')
+        console.log(`\n❌ Unable to write the file for helper class. Please make sure schemas are added in the ${CONFIG_FILE_NAME} file properly.`)
       }
     } catch (e: any) {
       console.error(e?.message ?? "Error in preparing algorithm.")
@@ -129,33 +132,57 @@ program
 
     const load = loading("Deploying the algorithm for your project...").start();
 
-    const newAlgoId = await deployAlgoOnChain(trueApi)
+    const newAlgoId = await deployAlgoOnChain()
 
     load.stop();
 
     console.log(`✅ Deploy successful, the algorithm is deployed on the True Network.\nAlgo Id: ${newAlgoId}`)
   });
 
+program
+  .command('test')
+  .argument('<string>', 'Wallet address of the user whom reputation needs to be calculated.')
+  .description('Get the reputation score of a user for the created algorithm in test mode (without deployment).')
+  .action(async (wallet) => {
+    if (!wallet) {
+      console.log("Wallet address is required for calculating reputation score.")
+      return;
+    }
+
+    const algoPath = readAlgorithmPath();
+
+    if (!algoPath) throw Error("Unable to read the algorithm path from true config.");
+
+    const wasmPath = path.join(process.cwd(), algoPath, 'build', 'release.wasm');
+
+    const load = loading(`Running the algorithm for your user: ${wallet}`).start();
+
+    const score = await fetchAttestationsAndCompute(wallet, wasmPath)
+
+    load.stop();
+
+    console.log(`Reputation Score for ${wallet.slice(0, 3)}...${wallet.slice(wallet.length - 3)} is ${score}`);
+  });
 
 program
-.command('dry-run')
-.argument('<string>', 'Wallet address of the user whom reputation needs to be calculated.')
-.description('Get the reputation score of a user for the created algorithm.')
-.action(async (wallet) => {
-  if(!wallet) {
-    console.log("Wallet address is required for calculating reputation score.")
-    return;
-  }
+  .command('run')
+  .argument('<string>', 'Wallet address of the user whom reputation needs to be calculated.')
+  .description('Get the reputation score of a user for the created algorithm.')
+  .action(async (wallet) => {
+    if (!wallet) {
+      console.log("Wallet address is required for calculating reputation score.")
+      return;
+    }
 
 
-  const load = loading(`Running the algorithm for your user: ${wallet}`).start();
+    const load = loading(`Running the algorithm for your user: ${wallet}`).start();
 
-  const score = await getReputationScore(trueApi, wallet)
+    const score = await getReputationScore(wallet)
 
-  load.stop();
+    load.stop();
 
-  console.log(`Reputation Score for ${wallet.slice(0, 3)}...${wallet.slice(wallet.length-3)} is ${score}`);
-});
+    console.log(`Reputation Score for ${wallet.slice(0, 3)}...${wallet.slice(wallet.length - 3)} is ${score}`);
+  });
 
 program
   .command('compile')
@@ -176,13 +203,14 @@ program
     console.log('✅ Build successful, the algorithm is compiled into wasm executable file.')
   });
 
-  program
+program
   .command('generate-schemas')
   .argument('[filePath]', 'Location & file name for the schemas.ts file to be saved.', 'schemas.ts')
   .description('Fetch and generate schemas from the hashes stored on-chain.')
   .action(async (filePath: string) => {
-    if(checkIfFileExists(filePath)) throw Error(`File already exists with name: ${filePath}`)
-    await generateSchemaTypes(trueApi, filePath)
+    if (checkIfFileExists(filePath)) throw Error(`File already exists with name: ${filePath}`)
+
+    await generateSchemaTypes(filePath)
   });
 
 
