@@ -1,4 +1,3 @@
-
 import { exec } from 'child_process'
 import inquirer from 'inquirer'
 import loading from 'loading-cli'
@@ -9,11 +8,31 @@ import { getIssuer } from '@truenetworkio/sdk/dist/pallets/issuer/state.js'
 import { stringToBlakeTwo256Hash } from '@truenetworkio/sdk/dist/utils/hashing.js'
 
 import { generateWallet } from '../helpers/wallet.js'
-import { createConfigFile, writeToEnvFile, writeToGitIgnore } from '../helpers/file.js'
+import { createConfigFile, readObjectFromFile, writeToEnvFile, writeToGitIgnore } from '../helpers/file.js'
 
 import { TrueApi } from "@truenetworkio/sdk";
+import { TRUE_DIRECTORY_NAME, CONFIG_FILE_NAME } from '../helpers/constants.js'
 
 const askQuestions = async () => {
+
+  // Check if the project is already setup. 
+  // if yes, ask if user want to override the existing config.
+  const config = readObjectFromFile(`${process.cwd()}/${TRUE_DIRECTORY_NAME}/${CONFIG_FILE_NAME}`);
+
+  if (config) {
+    // ask if user want to override the existing config.
+    const { override } = await inquirer.prompt({
+      name: "override",
+      type: 'confirm',
+      message: "Project already setup. Do you want to override the existing config?"
+    })
+
+    // close process if override is false. 
+    if (!override) {
+      console.log('Project already setup. Exiting...')
+      process.exit(0)
+    }
+  }
 
   const { isSecret } = await inquirer.prompt({
     name: "isSecret",
@@ -134,17 +153,18 @@ export const runProjectInit = async () => {
   createConfigFile(account, issuer)
 
   const load = loading("Installing @truenetworkio/sdk").start();
-  
+
   try {
     // 2.2 Installing the dependency using detected package manager
     await installDependency('@truenetworkio/sdk', load)
     load.stop()
-    
+
     writeToEnvFile(`TRUE_NETWORK_SECRET_KEY=${account.secret}`)
     writeToGitIgnore(`.env`)
 
     console.log('\n✅ Successfully created a new project.')
     console.log(`\nNext Steps: Get test tokens for the address: ${account.address}.`)
+    console.log(`\nYou can claim test tokens from the faucet: https://at.truenetwork.io/community`)
     console.log(`\nAnd then, use the register command to secure the issuer on the network.\n`)
   } catch (error: any) {
     console.error('Installation failed:', error?.message)
