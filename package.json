@@ -1,17 +1,20 @@
 {
   "name": "reputation-cli",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "",
-  "main": "index.js",
+  "main": "./dist/cli-with-suppress.js",
   "type": "module",
   "sideEffects": false,
   "bin": {
-    "reputation-cli": "./dist/index.js"
+    "reputation-cli": "./dist/cli-with-suppress.js"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "build": "npx tsc",
-    "install:local": "sudo npm uninstall -g reputation-cli && npm i && npm run build && sudo npm install -g .",
-    "dev": "npx tsc && node dist/index.js",
+    "build": "node build.js",
+    "install:local": "npm uninstall -g reputation-cli && npm i && npm run build && npm install -g .",
+    "dev": "node dist/cli-with-suppress.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -22,7 +25,9 @@
     "@types/figlet": "^1.5.8",
     "@types/inquirer": "^8.0.0",
     "@types/node": "^20.12.7",
-    "@types/shelljs": "^0.8.15"
+    "@types/shelljs": "^0.8.15",
+    "esbuild": "^0.25.0",
+    "esbuild-node-externals": "^1.18.0"
   },
   "dependencies": {
     "@polkadot/api": "13.2.1",

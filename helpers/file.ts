@@ -98,11 +98,18 @@ type ParsedConfigObject = {
 }
 
 // Function to read object from TypeScript file
+// TODO: Need to optimize this function for better reading with less probabilites of failure.
 export function readObjectFromFile(filePath: string): ParsedConfigObject | null {
   try {
-    // Load environment variables from a file
+    // Load environment variables from a file.
+    // NOTE: It's always assuming the .env file is one directory above the current working directory.
     const envFile = process.cwd() + '/.env'; // Update with the path to your environment file
-    const envData = fs.readFileSync(envFile, 'utf8');
+    
+    let envData = ''
+    if (fs.existsSync(envFile)) {
+      envData = fs.readFileSync(envFile, 'utf8');
+    }
+
     const envLines = envData.split('\n');
     envLines.forEach(line => {
       const [key, value] = line.split('=');

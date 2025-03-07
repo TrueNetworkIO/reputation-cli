@@ -17,9 +17,9 @@ const askQuestions = async () => {
 
   // Check if the project is already setup. 
   // if yes, ask if user want to override the existing config.
-  const config = readObjectFromFile(`${process.cwd()}/${TRUE_DIRECTORY_NAME}/${CONFIG_FILE_NAME}`);
+  const configPath = (`${process.cwd()}/${TRUE_DIRECTORY_NAME}/${CONFIG_FILE_NAME}`);
 
-  if (config) {
+  if (fs.existsSync(configPath)) {
     // ask if user want to override the existing config.
     const { override } = await inquirer.prompt({
       name: "override",
